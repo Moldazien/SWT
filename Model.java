@@ -1,36 +1,34 @@
 import java.util.ArrayList;
 
 public Socke {
-	private Socke andereSocke;
-	private Person person;
+	private Socke partnerSocke;
+	private Person träger;
 	
-	public Person getPerson() {return person;}
-	public Socke getAndereSocke() {return andereSocke;}
+	public Person getPerson() {return träger;}
+	public Socke getPartnerSocke() {return partnerSocke;}
 
 	public void setPerson(Person p) {
-		try {
+        try {
             lock.lock();
-			this.person = p;
-			if(this.person != this.andereSocke.getPerson()) {
-				this.andereSocke.setPerson(p);
+			this.träger = p;
+			if(this.träger != this.partnerSocke.getPerson()) {
+				this.partnerSocke.setPerson(p);
 			}
 		} finally {
 			lock.unlock();
 		}
 	}
 	
-	public void setAndereSocke(Socke s) {	
+	public void setPartnerSocke(Socke s) {	
 		try {
             lock.lock();
-			this.andereSocke = s;
-			if(s.getAndereSocke() != this) {
-				s.setAndereSocke(this);
+			this.partnerSocke = s;
+			if(s.getPartnerSocke() != this) {
+				s.setPartnerSocke(this);
+			}			
+			if(s.getPerson() != this.träger) {
+				s.setPerson(this.träger);
 			}
-			
-			if(s.getPerson() != this.person) {
-				s.setPerson(this.person);
-			}
-			
 		}finally {
 			lock.unlock();
 		}
@@ -44,35 +42,34 @@ class Person{
 	public Socke getLinkeSocke() {return linkeSocke;}
 	public Socke getRechteSocke() {return rechteSocke;}
 
-	private void setLinkeSocke(Socke l) {
+	public void setLinkeSocke(Socke l) {
 		try {
             lock.lock();	//lock ist Reentrant Lock
 			this.linkeSocke = l;
+            if(this.rechteSocke != null){
+                l.setPartnerSocke(this.rechteSocke)
+            }
 			if(l.getPerson() != this) {
 				l.setPerson(this);
 			}
+
 		} finally {
 			lock.unlock();
 		}
-			
 	}
-	private void setRechteSocke(Socke r) {
+
+	public void setRechteSocke(Socke r) {
 		try {
             lock.lock();
 			this.rechteSocke = r;
+            if(this.linkeSocke != null){
+                r.setPartnerSocke(this.linkeSocke)
+            }
 			if(r.getPerson() != this) {
 				r.setPerson(this);
 			}
 		} finally {
 			lock.unlock();
-		}
-	}
-	
-	public void setSocken(Socke r, Socke l) {
-		setRechteSocke(r);
-		setLinkeSocke(l);
-		if(l.getAndereSocke() != r) {
-			l.setAndereSocke(r);
 		}
 	}
 	
@@ -90,25 +87,22 @@ class Person{
 	}
 }
 
-
 class Firma{
 	public ArrayList<Person> getAngestellte() {
 		Vertrag[] verträge = Vertrag.verträgeVon(this);
-		ArrayList<Person> personenListe = new ArrayList<Person>();
+		ArrayList<Person> trägerenListe = new ArrayList<Person>();
 		for(int i = 0; i < verträge.length; i++) {
-			personenListe.add(verträge[i].getAngestellter());
+			trägerenListe.add(verträge[i].getAngestellter());
 		}
-		return personenListe;
+		return trägerenListe;
 	}
 	
 	public void addPerson(Person p) {
 		Vertrag(this, p);
 	}
-	
 }
 
-
-//class Vertrag{
-	// Annahme, dass Klasse vertrag wie in vorlesungsfolien aussieht, gleiche Funktionalität erfüllt
+class Vertrag{
+	// unter der annahme, dass Klasse vertrag wie in vorlesungsfolien aussieht, und gleiche Funktionalität erfüllt	#
 	// und die Klasse threadsave ist
-//}
+}
